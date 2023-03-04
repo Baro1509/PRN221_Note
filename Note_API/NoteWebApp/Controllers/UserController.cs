@@ -16,10 +16,10 @@ namespace NoteWebApp.Controllers {
             _mapper = mapper;
         }
 
-        [HttpGet(Name = "GetAllUsers")]
-        public UserResponse Get() {
+        [HttpGet(Name = "GetOneUser")]
+        public ResponseEntity<UserResponse> Get() {
             var user = _userRepository.GetAll().FirstOrDefault();
-            return _mapper.Map<UserResponse>(user);
+            return new ResponseEntity<UserResponse>(_mapper.Map<UserResponse>(user), 200, "Login successful");
         }
     }
 }

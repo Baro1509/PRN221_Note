@@ -81,3 +81,4 @@ C:\Users\Admin\Desktop\VSCODE\C#\PRN221_Note\Note_API\NoteWebApp\bin\Debug\net6.
 C:\Users\Admin\Desktop\VSCODE\C#\PRN221_Note\Note_API\NoteWebApp\bin\Debug\net6.0\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
 C:\Users\Admin\Desktop\VSCODE\C#\PRN221_Note\Note_API\NoteWebApp\bin\Debug\net6.0\Repository.dll
 C:\Users\Admin\Desktop\VSCODE\C#\PRN221_Note\Note_API\NoteWebApp\bin\Debug\net6.0\Repository.pdb
+C:\Users\Admin\Desktop\VSCODE\C#\PRN221_Note\Note_API\NoteWebApp\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
