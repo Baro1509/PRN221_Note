@@ -11,13 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-//builder.Services.AddDbContext<NoteDbContext>(options => {
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionStrings:NoteDB"));
-//});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<TaskRepository>();
+builder.Services.AddScoped<TaskItemRepository>();
+builder.Services.AddScoped<NoteRepository>();
+builder.Services.AddScoped<CardRepository>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
