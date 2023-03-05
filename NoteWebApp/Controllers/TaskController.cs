@@ -16,11 +16,13 @@ namespace NoteWebApp.Controllers {
     [ApiController]
     public class TaskController : ControllerBase {
         private readonly TaskRepository _taskRepository;
+        private readonly TaskItemRepository _taskItemRepository;
         private readonly IMapper _mapper;
 
-        public TaskController(TaskRepository taskRepository, IMapper mapper) {
+        public TaskController(TaskRepository taskRepository, IMapper mapper, TaskItemRepository taskItemRepository) {
             _taskRepository = taskRepository;
             _mapper = mapper;
+            _taskItemRepository = taskItemRepository;
         }
 
         [HttpGet]
@@ -90,7 +92,9 @@ namespace NoteWebApp.Controllers {
 
             var taskInDB = _taskRepository.GetAll().Where(p => p.UserId == userid && p.Id == task.Id).FirstOrDefault();
             if (taskInDB != null) {
-                 
+                return BadRequest(new {
+                    message = "Task already exist"
+                });
             }
 
             task.CreatedAt = DateTime.Now;
@@ -148,7 +152,7 @@ namespace NoteWebApp.Controllers {
             }
 
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
-            var taskInDB = _taskRepository.GetAll().Where(p => p.UserId == userid && p.Id == id).FirstOrDefault();
+            var taskInDB = _taskRepository.GetAll().Where(p => p.UserId == userid && p.Id == id).Include(p => p.TaskItems).FirstOrDefault();
             if (taskInDB == null) {
                 return NotFound(new {
                     message = "The task you are trying to delete is not available"

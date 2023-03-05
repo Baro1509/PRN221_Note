@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace Repository.Models;
 
@@ -28,23 +27,13 @@ public partial class NoteDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer(GetConnectionString());
-
-    public string GetConnectionString() {
-        string connectionString;
-        IConfiguration config = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", true, true)
-            .Build();
-        connectionString = config["ConnectionStrings:NoteDB"];
-        return connectionString;
-    }
+        => optionsBuilder.UseSqlServer("server=(local);database=NoteDB;uid=sa;pwd=12345678;TrustServerCertificate=true");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Card>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Card__3214EC074E3B6095");
+            entity.HasKey(e => e.Id).HasName("PK__Card__3214EC072B0A0B82");
 
             entity.ToTable("Card");
 
@@ -56,13 +45,12 @@ public partial class NoteDbContext : DbContext
 
             entity.HasOne(d => d.Note).WithMany(p => p.Cards)
                 .HasForeignKey(d => d.NoteId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Card__NoteId__46E78A0C");
         });
 
         modelBuilder.Entity<Note>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Note__3214EC07F79EFFEF");
+            entity.HasKey(e => e.Id).HasName("PK__Note__3214EC0753214BD6");
 
             entity.ToTable("Note");
 
@@ -79,7 +67,7 @@ public partial class NoteDbContext : DbContext
 
         modelBuilder.Entity<Task>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Task__3214EC07E6D0D07D");
+            entity.HasKey(e => e.Id).HasName("PK__Task__3214EC07FBFBAF8B");
 
             entity.ToTable("Task");
 
@@ -91,13 +79,12 @@ public partial class NoteDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Tasks)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Task__UserId__3A81B327");
         });
 
         modelBuilder.Entity<TaskItem>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__TaskItem__3214EC07FE3FB0FD");
+            entity.HasKey(e => e.Id).HasName("PK__TaskItem__3214EC07526EB0A0");
 
             entity.ToTable("TaskItem");
 
@@ -111,13 +98,12 @@ public partial class NoteDbContext : DbContext
 
             entity.HasOne(d => d.Task).WithMany(p => p.TaskItems)
                 .HasForeignKey(d => d.TaskId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__TaskItem__TaskId__3F466844");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User__3214EC0781550E12");
+            entity.HasKey(e => e.Id).HasName("PK__User__3214EC07FD646B42");
 
             entity.ToTable("User");
 
