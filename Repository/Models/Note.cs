@@ -15,6 +15,8 @@ public partial class Note
 
     public Guid UserId { get; set; }
 
+    public bool? IsDelete { get; set; }
+
     public virtual ICollection<Card> Cards { get; } = new List<Card>();
 
     public virtual User User { get; set; } = null!;

@@ -6,7 +6,7 @@
 
         public string? Description { get; set; }
 
-        public bool? IsCompleted { get; set; }
+        public byte Progress { get; set; }
 
         public DateTime? Deadline { get; set; }
 
@@ -14,8 +14,12 @@
 
         public DateTime CreatedAt { get; set; }
 
+        public DateTime StartDate { get; set; }
+
         public DateTime UpdatedAt { get; set; }
 
         public Guid TaskId { get; set; }
+
+        public bool? IsDelete { get; set; }
     }
 }

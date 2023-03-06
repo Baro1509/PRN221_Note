@@ -16,8 +16,17 @@ namespace NoteWebApp.Controllers {
     [ApiController]
     public class TaskController : ControllerBase {
         private readonly TaskRepository _taskRepository;
-        private readonly TaskItemRepository _taskItemRepository;
         private readonly IMapper _mapper;
+        private readonly TaskItemRepository _taskItemRepository;
+
+        private readonly byte LOW_PRIORITY = 2;
+        private readonly byte MEDIUM_PRIORITY = 1;
+        private readonly byte HIGH_PRIORITY = 0;
+
+        private readonly byte PLAN_PROGRESS = 0;
+        private readonly byte PROGRESS_PROGRESS = 1;
+        private readonly byte REVIEW_PROGRESS = 2;
+        private readonly byte DONE_PROGRESS = 3;
 
         public TaskController(TaskRepository taskRepository, IMapper mapper, TaskItemRepository taskItemRepository) {
             _taskRepository = taskRepository;
@@ -37,7 +46,6 @@ namespace NoteWebApp.Controllers {
                 return Unauthorized();
             }
 
-            var header = Request.Headers;
             if (taskreq == null) {
                 return BadRequest();
             }
@@ -49,9 +57,17 @@ namespace NoteWebApp.Controllers {
             }
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
             var tasks = _taskRepository.GetAll()
-                .Where(p => p.UserId == userid && DateTime.Compare(p.CreatedAt, taskreq.DateTo) <= 0 && DateTime.Compare(taskreq.DateFrom, p.CreatedAt) <= 0)
-                .Include(p=>p.TaskItems)
+                .Where(p => p.UserId == userid &&
+                    DateTime.Compare(p.CreatedAt, taskreq.DateTo) <= 0 &&
+                    DateTime.Compare(taskreq.DateFrom, p.CreatedAt) <= 0 &&
+                    p.IsDelete == false)
+                .Include(p => p.TaskItems.Where(o => o.IsDelete == false))
                 .Select(p => _mapper.Map<TaskWithTaskItemResponse>(p));
+            if (tasks == null) {
+                return Ok(new {
+                    message = "You do not have any tasks for this date range"
+                });
+            }
             return Ok(new {taskList = tasks});
         }
 
@@ -68,7 +84,16 @@ namespace NoteWebApp.Controllers {
                 return Unauthorized();
             }
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
-            var task = _taskRepository.GetAll().Where(p => p.UserId == userid && p.Id == taskId).Include(p => p.TaskItems).Select(p => _mapper.Map<TaskWithTaskItemResponse>(p)).FirstOrDefault();
+            var task = _taskRepository.GetAll()
+                .Where(p => p.UserId == userid && p.Id == taskId && p.IsDelete == false)
+                .Include(p => p.TaskItems.Where(o => o.IsDelete == false))
+                .Select(p => _mapper.Map<TaskWithTaskItemResponse>(p))
+                .FirstOrDefault();
+            if (task == null) {
+                return Ok(new {
+                    message = "Task not found"
+                });
+            }
             return Ok(new {task = task});
         }
 
@@ -90,13 +115,17 @@ namespace NoteWebApp.Controllers {
                 });
             }
 
-            var taskInDB = _taskRepository.GetAll().Where(p => p.UserId == userid && p.Id == task.Id).FirstOrDefault();
+            var taskInDB = _taskRepository.GetAll()
+                .Where(p => p.UserId == userid && p.Id == task.Id && p.IsDelete == false)
+                .FirstOrDefault();
             if (taskInDB != null) {
                 return BadRequest(new {
                     message = "Task already exist"
                 });
             }
 
+            task.Progress = HIGH_PRIORITY;
+            task.Progress = PLAN_PROGRESS;
             task.CreatedAt = DateTime.Now;
             task.UpdatedAt = DateTime.Now;
             _taskRepository.Create(_mapper.Map<Repository.Models.Task>(task));
@@ -123,7 +152,9 @@ namespace NoteWebApp.Controllers {
                 });
             }
 
-            var taskInDB = _taskRepository.GetAll().Where(p => p.UserId == userid && p.Id == task.Id).FirstOrDefault();
+            var taskInDB = _taskRepository.GetAll()
+                .Where(p => p.UserId == userid && p.Id == task.Id && p.IsDelete == false)
+                .FirstOrDefault();
             if (taskInDB == null) {
                 return NotFound(new {
                     message = "The task you are trying to update is not available"
@@ -152,7 +183,10 @@ namespace NoteWebApp.Controllers {
             }
 
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
-            var taskInDB = _taskRepository.GetAll().Where(p => p.UserId == userid && p.Id == id).Include(p => p.TaskItems).FirstOrDefault();
+            var taskInDB = _taskRepository.GetAll()
+                .Where(p => p.UserId == userid && p.Id == id && p.IsDelete == false)
+                .Include(p => p.TaskItems.Where(o => o.IsDelete == false))
+                .FirstOrDefault();
             if (taskInDB == null) {
                 return NotFound(new {
                     message = "The task you are trying to delete is not available"
@@ -163,7 +197,15 @@ namespace NoteWebApp.Controllers {
                     message = "You are now allowed to delete task for this user"
                 });
             }
-            _taskRepository.Delete(taskInDB);
+
+            taskInDB.TaskItems.ToList().ForEach(p => {
+                p.IsDelete = true;
+                p.UpdatedAt = DateTime.Now;
+                _taskItemRepository.Update(p);
+            });
+            taskInDB.IsDelete = true;
+            taskInDB.UpdatedAt = DateTime.Now;
+            _taskRepository.Update(taskInDB);
             return Ok(new {
                 message = "Task deleted successfully"
             });

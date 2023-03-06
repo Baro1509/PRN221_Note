@@ -19,5 +19,7 @@ public partial class Card
 
     public Guid NoteId { get; set; }
 
+    public bool? IsDelete { get; set; }
+
     public virtual Note Note { get; set; } = null!;
 }
