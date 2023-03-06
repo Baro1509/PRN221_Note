@@ -172,7 +172,8 @@ namespace NoteWebApp.Controllers {
             task.UpdatedAt = DateTime.Now;
             _taskRepository.Update(task);
 
-            _taskItemRepository.Delete(taskItem);
+            taskItem.IsDelete = true;
+            _taskItemRepository.Update(taskItem);
             return Ok(new {
                 message = "Task item deleted successfully"
             });

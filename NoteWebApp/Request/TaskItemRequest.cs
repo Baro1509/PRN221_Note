@@ -21,5 +21,9 @@
         public Guid TaskId { get; set; }
 
         public bool? IsDelete { get; set; }
+
+        public bool validateTaskItemRequest() {
+            return true;
+        }
     }
 }

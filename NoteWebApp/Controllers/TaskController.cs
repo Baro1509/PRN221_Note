@@ -46,10 +46,6 @@ namespace NoteWebApp.Controllers {
                 return Unauthorized();
             }
 
-            if (taskreq == null) {
-                return BadRequest();
-            }
-
             if (DateTime.Compare(taskreq.DateFrom, taskreq.DateTo) > 0) {
                 return BadRequest(new {
                     message = "Datefrom should be before dateto"
@@ -123,11 +119,14 @@ namespace NoteWebApp.Controllers {
                     message = "Task already exist"
                 });
             }
-
-            task.Progress = HIGH_PRIORITY;
+            
+            DateTime now = DateTime.Now;
+            task.Priority = HIGH_PRIORITY;
             task.Progress = PLAN_PROGRESS;
-            task.CreatedAt = DateTime.Now;
-            task.UpdatedAt = DateTime.Now;
+            task.CreatedAt = now;
+            task.UpdatedAt = now;
+            task.StartDate = now;
+            task.IsDelete = false;
             _taskRepository.Create(_mapper.Map<Repository.Models.Task>(task));
             return Ok(new {
                 message = "Task created successfully"
@@ -162,7 +161,9 @@ namespace NoteWebApp.Controllers {
             }
 
             taskInDB.Title = task.Title;
+            taskInDB.Progress = task.Progress;
             taskInDB.Description = task.Description;
+            taskInDB.StartDate = task.StartDate;
             taskInDB.UpdatedAt = DateTime.Now;
             taskInDB.Priority = task.Priority;
             _taskRepository.Update(taskInDB);
