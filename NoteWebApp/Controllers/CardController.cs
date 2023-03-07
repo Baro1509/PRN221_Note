@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NoteWebApp.Request;
+using NoteWebApp.Response;
 using Repository;
 using Repository.Models;
 
@@ -20,7 +22,63 @@ namespace NoteWebApp.Controllers
             _mapper = mapper;
             _noteRepository = noteRepository;
         }
+        [HttpGet]
+        [ActionName("GetNoteWithCard")]
+        public IActionResult GetCard([FromBody] SortCardRequest sortCardRequest)
+        {
+            var user = HttpContext.User;
+            if (user == null)
+            {
+                return Unauthorized();
+            }
 
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
+                return Unauthorized();
+            }
+            var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
+
+            var note = _noteRepository
+              .GetAll()
+              .Where(p => p.UserId == userid && p.Id == sortCardRequest.NoteId && p.IsDelete == false)
+              .Include(p => p.Cards.Where(o => o.IsDelete == false))
+              .Select(p => _mapper.Map<NoteCardResponse>(p)).FirstOrDefault();
+            if (sortCardRequest.SortType == 1)
+            {
+                if (sortCardRequest.IsAsc == true)
+                {
+                    note.Cards = note.Cards.OrderBy(o => o.Title).ToList();
+
+                }
+                else
+                {
+                    note.Cards = note.Cards.OrderByDescending(o => o.Title).ToList();
+                }
+            }
+            else if (sortCardRequest.SortType == 2)
+            {
+                if (sortCardRequest.IsAsc == true)
+                {
+                    note.Cards = note.Cards.OrderBy(o => o.UpdatedAt).ToList();
+                }
+
+                else
+                {
+                    note.Cards = note.Cards.OrderByDescending(o => o.UpdatedAt).ToList();
+
+                }
+            }
+
+            if (note == null)
+            {
+                return Ok(new
+                {
+                    message = "Note not found"
+                });
+            }
+
+            return Ok(new { note = note });
+        }
         [HttpPost]
         public IActionResult Create([FromBody] CardRequest cardRequest)
         {
@@ -36,7 +94,10 @@ namespace NoteWebApp.Controllers
             }
 
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
-            var note = _noteRepository.GetAll().Where(p => p.Id == cardRequest.NoteId && p.UserId == userid).FirstOrDefault();
+            var note = _noteRepository
+                .GetAll()
+                .Where(p => p.Id == cardRequest.NoteId && p.UserId == userid && p.IsDelete == false)
+                .FirstOrDefault();
 
             if (note == null)
             {
@@ -46,7 +107,10 @@ namespace NoteWebApp.Controllers
                 });
             }
 
-            var card = _cardRepository.GetAll().Where(p => p.Id == cardRequest.Id && p.NoteId == cardRequest.NoteId).FirstOrDefault();
+            var card = _cardRepository
+                .GetAll()
+                .Where(p => p.Id == cardRequest.Id && p.NoteId == cardRequest.NoteId && p.IsDelete == false)
+                .FirstOrDefault();
             if (card != null)
             {
                 return BadRequest(new
@@ -55,8 +119,11 @@ namespace NoteWebApp.Controllers
                 });
             }
 
-            card.CreatedAt = DateTime.Now;
-            card.UpdatedAt = DateTime.Now;
+            cardRequest.CreatedAt = DateTime.Now;
+            cardRequest.UpdatedAt = DateTime.Now;
+            cardRequest.IsDelete = false;
+            note.UpdatedAt = DateTime.Now;
+            _noteRepository.Update(note);
             _cardRepository.Create(_mapper.Map<Card>(cardRequest));
             return Ok(new
             {
@@ -78,7 +145,10 @@ namespace NoteWebApp.Controllers
             }
 
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
-            var note = _noteRepository.GetAll().Where(p => p.Id == cardRequest.NoteId && p.UserId == userid).FirstOrDefault();
+            var note = _noteRepository
+                .GetAll()
+                .Where(p => p.Id == cardRequest.NoteId && p.UserId == userid && p.IsDelete == false)
+                .FirstOrDefault();
 
             if (note == null)
             {
@@ -87,7 +157,10 @@ namespace NoteWebApp.Controllers
                     message = "Note not found"
                 });
             }
-            var card = _cardRepository.GetAll().Where(p => p.Id == cardRequest.Id && p.NoteId == cardRequest.NoteId).FirstOrDefault();
+            var card = _cardRepository
+                .GetAll()
+                .Where(p => p.Id == cardRequest.Id && p.NoteId == cardRequest.NoteId && p.IsDelete == false)
+                .FirstOrDefault();
 
             if (card == null)
             {
@@ -100,14 +173,69 @@ namespace NoteWebApp.Controllers
             card.Title = cardRequest.Title;
             card.Color = cardRequest.Color;
             card.Content = cardRequest.Content;
+            card.IsDelete = false;
             card.UpdatedAt = DateTime.Now;
-
+            note.UpdatedAt = DateTime.Now;
+            _noteRepository.Update(note);
             _cardRepository.Update(card);
             return Ok(new
             {
                 message = "Card updated successfully"
             });
         }
+        [HttpDelete]
+        public IActionResult Delete([FromQuery] Guid id)
+        {
+            var user = HttpContext.User;
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
+                return Unauthorized();
+            }
+            var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
 
+            var card = _cardRepository.GetAll().Where(p => p.Id == id && p.IsDelete == false).FirstOrDefault();
+            if (card == null)
+            {
+                return NotFound(new
+                {
+                    message = "Card item not found"
+                });
+            }
+
+            var note = _noteRepository
+                .GetAll()
+                .Where(p => p.Id == card.NoteId && p.IsDelete == false)
+                .FirstOrDefault();
+            if (note == null)
+            {
+                return NotFound(new
+                {
+                    message = "Note not found, denying delete"
+                });
+            }
+
+            if (note.UserId != userid)
+            {
+                return Unauthorized(new
+                {
+                    message = "You are not allowed to delete this note item"
+                });
+            }
+            note.UpdatedAt = DateTime.Now;
+            _noteRepository.Update(note);
+            card.UpdatedAt = DateTime.Now;
+            card.IsDelete = true;
+            _cardRepository.Update(card);
+            return Ok(new
+            {
+                message = "Card deleted successfully"
+            });
+        }
     }
+
 }
+

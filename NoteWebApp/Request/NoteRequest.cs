@@ -9,6 +9,7 @@
         public DateTime CreatedAt { get; set; }
 
         public DateTime UpdatedAt { get; set; }
+        public bool? IsDelete { get; set; }
 
         public Guid UserId { get; set; }
     }

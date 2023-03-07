@@ -15,6 +15,7 @@ namespace NoteWebApp.Mapper
             CreateMap<Card, CardResponse>();
             CreateMap<NoteRequest, Note>()
              .ForMember(dest => dest.Cards, opt => opt.Ignore());
+            CreateMap<CardRequest, Card>();
         }
 
     }

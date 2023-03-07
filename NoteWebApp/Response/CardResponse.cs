@@ -15,5 +15,6 @@
         public DateTime UpdatedAt { get; set; }
 
         public Guid NoteId { get; set; }
+        public bool? IsDelete { get; set; }
     }
 }
