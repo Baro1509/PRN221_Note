@@ -1,11 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Azure;
-using Repository.Models;
+using System.Threading.Tasks;
 
-namespace Repository {
-    public class TaskRepository : RepositoryBase<Models.Task> {
+namespace Repository
+{
+    public class TaskRepository : RepositoryBase<Task>
+    {
     }
 }

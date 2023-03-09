@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Repository.Models;
 
@@ -28,17 +25,7 @@ public partial class NoteDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer(GetConnectionString());
-
-    public string GetConnectionString() {
-        string connectionString;
-        IConfiguration config = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", true, true)
-            .Build();
-        connectionString = config["ConnectionStrings:NoteDB"];
-        return connectionString;
-    }
+        => optionsBuilder.UseSqlServer("Server=(local);Uid=sa;Pwd=1;Database=NoteDB;TrustServerCertificate=true");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,6 +38,7 @@ public partial class NoteDbContext : DbContext
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Color).HasMaxLength(6);
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
@@ -69,6 +57,7 @@ public partial class NoteDbContext : DbContext
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
@@ -90,6 +79,8 @@ public partial class NoteDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(200);
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.StartDate).HasColumnType("datetime");
+            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
+            entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
@@ -109,6 +100,8 @@ public partial class NoteDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Deadline).HasColumnType("datetime");
             entity.Property(e => e.Description).HasMaxLength(200);
+            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
+            entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(50);
