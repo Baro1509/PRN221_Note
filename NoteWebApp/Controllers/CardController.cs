@@ -8,7 +8,7 @@ using Repository.Models;
 
 namespace NoteWebApp.Controllers
 {
-    [Route("api/notes/cards")]
+    [Route("api/cards")]
     [ApiController]
     public class CardController : Controller
     {
@@ -24,7 +24,8 @@ namespace NoteWebApp.Controllers
         }
         [HttpGet]
         [ActionName("GetNoteWithCard")]
-        public IActionResult GetCard([FromBody] SortCardRequest sortCardRequest)
+        [Route("/api/cards/{noteId:guid}")]
+        public IActionResult GetCard([FromQuery] SortCardRequest sortCardRequest, Guid noteId)
         {
             var user = HttpContext.User;
             if (user == null)
@@ -40,10 +41,10 @@ namespace NoteWebApp.Controllers
 
             var note = _noteRepository
               .GetAll()
-              .Where(p => p.UserId == userid && p.Id == sortCardRequest.NoteId && p.IsDelete == false)
-              .Include(p => p.Cards.Where(o => o.IsDelete == false))
+              .Where(p => p.UserId == userid && p.Id == noteId && p.IsDelete == false)
+              .Include(p => p.Cards.Where(o => o.IsDelete == false).OrderByDescending(o => o.UpdatedAt))
               .Select(p => _mapper.Map<NoteCardResponse>(p)).FirstOrDefault();
-            if (sortCardRequest.SortType == 1)
+            if (sortCardRequest.SortType == 0)
             {
                 if (sortCardRequest.IsAsc == true)
                 {
@@ -55,7 +56,7 @@ namespace NoteWebApp.Controllers
                     note.Cards = note.Cards.OrderByDescending(o => o.Title).ToList();
                 }
             }
-            else if (sortCardRequest.SortType == 2)
+            else if (sortCardRequest.SortType == 1)
             {
                 if (sortCardRequest.IsAsc == true)
                 {
