@@ -1,27 +1,24 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.IdentityModel.Tokens;
 using NoteWebApp.Request;
 using NoteWebApp.Response;
 using Repository;
-using Repository.Models;
-using System.Net.Http.Headers;
-using System.Runtime.InteropServices;
 
-namespace NoteWebApp.Controllers {
+namespace NoteWebApp.Controllers
+{
     [Authorize]
     [Route("api/tasks")]
     [ApiController]
-    public class TaskController : ControllerBase {
+    public class TaskController : ControllerBase
+    {
         private readonly TaskRepository _taskRepository;
         private readonly IMapper _mapper;
         private readonly TaskItemRepository _taskItemRepository;
 
-        public TaskController(TaskRepository taskRepository, IMapper mapper, TaskItemRepository taskItemRepository) {
+        public TaskController(TaskRepository taskRepository, IMapper mapper, TaskItemRepository taskItemRepository)
+        {
             _taskRepository = taskRepository;
             _mapper = mapper;
             _taskItemRepository = taskItemRepository;
@@ -57,24 +54,29 @@ namespace NoteWebApp.Controllers {
         //            message = "You do not have any tasks for this date range"
         //        });
         //    }
-            
+
         //    return Ok(new {taskList = tasks});
         //}
-        
+
         [HttpGet]
         [ActionName("GetAllTasksWithSort")]
-        public IActionResult GetAllTasks([FromHeader] TaskDateRequest taskreq, string? orderBy, bool? isAscend) {
+        public IActionResult GetAllTasks([FromHeader] TaskDateRequest taskreq, int orderBy, bool? isAscend)
+        {
             var user = HttpContext.User;
-            if (user == null) {
+            if (user == null)
+            {
                 return Unauthorized();
             }
 
-            if (!user.HasClaim(p => p.Type == "UserId")) {
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
                 return Unauthorized();
             }
 
-            if (DateTime.Compare(taskreq.DateFrom, taskreq.DateTo) > 0) {
-                return BadRequest(new {
+            if (DateTime.Compare(taskreq.DateFrom, taskreq.DateTo) > 0)
+            {
+                return BadRequest(new
+                {
                     message = "Datefrom should be before dateto"
                 });
             }
@@ -86,44 +88,61 @@ namespace NoteWebApp.Controllers {
                     p.IsDelete == false)
                 .Include(p => p.TaskItems.Where(o => o.IsDelete == false))
                 .Select(p => _mapper.Map<TaskWithTaskItemResponse>(p)).ToList();
-            if (tasks == null) {
-                return Ok(new {
+            if (tasks == null)
+            {
+                return Ok(new
+                {
                     message = "You do not have any tasks for this date range"
                 });
             }
-            if (!orderBy.IsNullOrEmpty() && !isAscend == null) {
-                if (orderBy != "progress" && orderBy != "priority") {
-                    return BadRequest(new {
+            if (!isAscend == null)
+            {
+                if (orderBy != 0 && orderBy != 1)
+                {
+                    return BadRequest(new
+                    {
                         message = "Sort param error"
                     });
                 }
-                if (isAscend == false) {
-                    if (orderBy == "progress") {
+                if (isAscend == false)
+                {
+                    if (orderBy == 1)
+                    {
                         tasks = tasks.OrderByDescending(p => p.Progress).ToList();
-                    } else {
+                    }
+                    else
+                    {
                         tasks = tasks.OrderByDescending(p => p.Priority).ToList();
                     }
-                } else {
-                    if (orderBy == "progress") {
+                }
+                else
+                {
+                    if (orderBy == 1)
+                    {
                         tasks = tasks.OrderBy(p => p.Progress).ToList();
-                    } else {
+                    }
+                    else
+                    {
                         tasks = tasks.OrderBy(p => p.Priority).ToList();
                     }
                 }
             }
-            return Ok(new {taskList = tasks});
+            return Ok(new { taskList = tasks });
         }
 
         [HttpGet]
         [ActionName("GetOneTask")]
         [Route("/api/tasks/{taskId:guid}")]
-        public IActionResult GetTask(Guid taskId) {
+        public IActionResult GetTask(Guid taskId)
+        {
             var user = HttpContext.User;
-            if (user == null) {
+            if (user == null)
+            {
                 return Unauthorized();
             }
 
-            if (!user.HasClaim(p => p.Type == "UserId")) {
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
                 return Unauthorized();
             }
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
@@ -132,34 +151,43 @@ namespace NoteWebApp.Controllers {
                 .Include(p => p.TaskItems.Where(o => o.IsDelete == false))
                 .Select(p => _mapper.Map<TaskWithTaskItemResponse>(p))
                 .FirstOrDefault();
-            if (task == null) {
-                return Ok(new {
+            if (task == null)
+            {
+                return Ok(new
+                {
                     message = "Task not found"
                 });
             }
-            return Ok(new {task = task});
+            return Ok(new { task = task });
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody]TaskRequest task) {
+        public IActionResult Create([FromBody] TaskRequest task)
+        {
             var user = HttpContext.User;
-            if (user == null) {
+            if (user == null)
+            {
                 return Unauthorized();
             }
 
-            if (!user.HasClaim(p => p.Type == "UserId")) {
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
                 return Unauthorized();
             }
 
-            if (!task.validation()) {
-                return BadRequest(new {
+            if (!task.validation())
+            {
+                return BadRequest(new
+                {
                     message = "The request is not in the correct format"
                 });
             }
 
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
-            if (userid != task.UserId) {
-                return Unauthorized(new {
+            if (userid != task.UserId)
+            {
+                return Unauthorized(new
+                {
                     message = "You are now allowed to create task for this user"
                 });
             }
@@ -167,44 +195,54 @@ namespace NoteWebApp.Controllers {
             var taskInDB = _taskRepository.GetAll()
                 .Where(p => p.UserId == userid && p.Id == task.Id && p.IsDelete == false)
                 .FirstOrDefault();
-            if (taskInDB != null) {
-                return BadRequest(new {
+            if (taskInDB != null)
+            {
+                return BadRequest(new
+                {
                     message = "Task already exist"
                 });
             }
-            
+
             DateTime now = DateTime.Now;
             task.CreatedAt = now;
             task.UpdatedAt = now;
             task.StartDate = now;
             task.IsDelete = false;
             _taskRepository.Create(_mapper.Map<Repository.Models.Task>(task));
-            return Ok(new {
+            return Ok(new
+            {
                 message = "Task created successfully"
             });
         }
 
         [HttpPut]
-        public IActionResult Update([FromBody] TaskRequest task) {
+        public IActionResult Update([FromBody] TaskRequest task)
+        {
             var user = HttpContext.User;
-            if (user == null) {
+            if (user == null)
+            {
                 return Unauthorized();
             }
 
-            if (!user.HasClaim(p => p.Type == "UserId")) {
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
                 return Unauthorized();
             }
 
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
-            if (userid != task.UserId) {
-                return Unauthorized(new {
+            if (userid != task.UserId)
+            {
+                return Unauthorized(new
+                {
                     message = "You are now allowed to update task for this user"
                 });
             }
 
             DateTime now = DateTime.Now;
-            if (!task.validation()) {
-                return BadRequest(new {
+            if (!task.validation())
+            {
+                return BadRequest(new
+                {
                     message = "The request is not in the correct format"
                 });
             }
@@ -212,13 +250,17 @@ namespace NoteWebApp.Controllers {
             var taskInDB = _taskRepository.GetAll()
                 .Where(p => p.UserId == userid && p.Id == task.Id && p.IsDelete == false)
                 .FirstOrDefault();
-            if (taskInDB == null) {
-                return NotFound(new {
+            if (taskInDB == null)
+            {
+                return NotFound(new
+                {
                     message = "The task you are trying to update is not available"
                 });
             }
-            if (DateTime.Compare(taskInDB.CreatedAt, task.StartDate) > 0) {
-                return BadRequest(new {
+            if (DateTime.Compare(taskInDB.CreatedAt, task.StartDate) > 0)
+            {
+                return BadRequest(new
+                {
                     message = "Start date should be after created date"
                 });
             }
@@ -230,19 +272,23 @@ namespace NoteWebApp.Controllers {
             taskInDB.UpdatedAt = now;
             taskInDB.Priority = task.Priority;
             _taskRepository.Update(taskInDB);
-            return Ok(new {
+            return Ok(new
+            {
                 message = "Task updated successfully"
             });
         }
 
         [HttpDelete]
-        public IActionResult Delete([FromQuery] Guid id) {
+        public IActionResult Delete([FromQuery] Guid id)
+        {
             var user = HttpContext.User;
-            if (user == null) {
+            if (user == null)
+            {
                 return Unauthorized();
             }
 
-            if (!user.HasClaim(p => p.Type == "UserId")) {
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
                 return Unauthorized();
             }
 
@@ -251,18 +297,23 @@ namespace NoteWebApp.Controllers {
                 .Where(p => p.UserId == userid && p.Id == id && p.IsDelete == false)
                 .Include(p => p.TaskItems.Where(o => o.IsDelete == false))
                 .FirstOrDefault();
-            if (taskInDB == null) {
-                return NotFound(new {
+            if (taskInDB == null)
+            {
+                return NotFound(new
+                {
                     message = "The task you are trying to delete is not available"
                 });
             }
-            if (userid != taskInDB.UserId) {
-                return Unauthorized(new {
+            if (userid != taskInDB.UserId)
+            {
+                return Unauthorized(new
+                {
                     message = "You are now allowed to delete task for this user"
                 });
             }
 
-            taskInDB.TaskItems.ToList().ForEach(p => {
+            taskInDB.TaskItems.ToList().ForEach(p =>
+            {
                 p.IsDelete = true;
                 p.UpdatedAt = DateTime.Now;
                 _taskItemRepository.Update(p);
@@ -270,7 +321,8 @@ namespace NoteWebApp.Controllers {
             taskInDB.IsDelete = true;
             taskInDB.UpdatedAt = DateTime.Now;
             _taskRepository.Update(taskInDB);
-            return Ok(new {
+            return Ok(new
+            {
                 message = "Task deleted successfully"
             });
         }

@@ -13,6 +13,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<NoteRepository>();
+builder.Services.AddScoped<CardRepository>();
+builder.Services.AddScoped<TaskRepository>();
+builder.Services.AddScoped<TaskItemRepository>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.RequireHttpsMetadata = false;
