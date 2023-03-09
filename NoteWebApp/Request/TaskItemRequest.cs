@@ -22,7 +22,15 @@
 
         public bool? IsDelete { get; set; }
 
-        public bool validateTaskItemRequest() {
+        public bool validate() {
+            if (Progress != DefaultData.PROGRESS_PROGRESS ||
+                Progress != DefaultData.DONE_PROGRESS ||
+                Progress != DefaultData.PLAN_PROGRESS ||
+                Progress != DefaultData.REVIEW_PROGRESS) return false;
+            if (Priority != DefaultData.LOW_PRIORITY ||
+                Priority != DefaultData.HIGH_PRIORITY ||
+                Priority != DefaultData.MEDIUM_PRIORITY) return false;
+            if (DateTime.Compare(StartDate, CreatedAt) < 0) return false;
             return true;
         }
     }

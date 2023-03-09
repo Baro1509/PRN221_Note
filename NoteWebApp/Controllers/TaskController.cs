@@ -8,7 +8,6 @@ using NoteWebApp.Request;
 using NoteWebApp.Response;
 using Repository;
 using Repository.Models;
-using System.Threading.Tasks;
 
 namespace NoteWebApp.Controllers {
     [Authorize]
@@ -18,15 +17,6 @@ namespace NoteWebApp.Controllers {
         private readonly TaskRepository _taskRepository;
         private readonly IMapper _mapper;
         private readonly TaskItemRepository _taskItemRepository;
-
-        private readonly byte LOW_PRIORITY = 2;
-        private readonly byte MEDIUM_PRIORITY = 1;
-        private readonly byte HIGH_PRIORITY = 0;
-
-        private readonly byte PLAN_PROGRESS = 0;
-        private readonly byte PROGRESS_PROGRESS = 1;
-        private readonly byte REVIEW_PROGRESS = 2;
-        private readonly byte DONE_PROGRESS = 3;
 
         public TaskController(TaskRepository taskRepository, IMapper mapper, TaskItemRepository taskItemRepository) {
             _taskRepository = taskRepository;
@@ -104,6 +94,12 @@ namespace NoteWebApp.Controllers {
                 return Unauthorized();
             }
 
+            if (!task.validation()) {
+                return BadRequest(new {
+                    message = "The request is not in the correct format"
+                });
+            }
+
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
             if (userid != task.UserId) {
                 return Unauthorized(new {
@@ -121,8 +117,6 @@ namespace NoteWebApp.Controllers {
             }
             
             DateTime now = DateTime.Now;
-            task.Priority = HIGH_PRIORITY;
-            task.Progress = PLAN_PROGRESS;
             task.CreatedAt = now;
             task.UpdatedAt = now;
             task.StartDate = now;
@@ -151,6 +145,13 @@ namespace NoteWebApp.Controllers {
                 });
             }
 
+            DateTime now = DateTime.Now;
+            if (!task.validation()) {
+                return BadRequest(new {
+                    message = "The request is not in the correct format"
+                });
+            }
+
             var taskInDB = _taskRepository.GetAll()
                 .Where(p => p.UserId == userid && p.Id == task.Id && p.IsDelete == false)
                 .FirstOrDefault();
@@ -159,12 +160,17 @@ namespace NoteWebApp.Controllers {
                     message = "The task you are trying to update is not available"
                 });
             }
+            if (DateTime.Compare(taskInDB.CreatedAt, task.StartDate) > 0) {
+                return BadRequest(new {
+                    message = "Start date should be after created date"
+                });
+            }
 
             taskInDB.Title = task.Title;
             taskInDB.Progress = task.Progress;
             taskInDB.Description = task.Description;
             taskInDB.StartDate = task.StartDate;
-            taskInDB.UpdatedAt = DateTime.Now;
+            taskInDB.UpdatedAt = now;
             taskInDB.Priority = task.Priority;
             _taskRepository.Update(taskInDB);
             return Ok(new {

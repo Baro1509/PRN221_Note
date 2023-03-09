@@ -14,15 +14,6 @@ namespace NoteWebApp.Controllers {
         private readonly TaskRepository _taskRepository;
         private readonly IMapper _mapper;
 
-        private readonly byte LOW_PRIORITY = 2;
-        private readonly byte MEDIUM_PRIORITY = 1;
-        private readonly byte HIGH_PRIORITY = 0;
-
-        private readonly byte PLAN_PROGRESS = 0;
-        private readonly byte PROGRESS_PROGRESS = 1;
-        private readonly byte REVIEW_PROGRESS = 2;
-        private readonly byte DONE_PROGRESS = 3;
-
         public TaskItemController(TaskItemRepository taskItemRepository, IMapper mapper, TaskRepository taskRepository) {
             _taskItemRepository = taskItemRepository;
             _mapper = mapper;
@@ -63,6 +54,9 @@ namespace NoteWebApp.Controllers {
             if (!user.HasClaim(p => p.Type == "UserId")) {
                 return Unauthorized();
             }
+            if (!taskItemRequest.validate()) {
+                return BadRequest();
+            }
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
             var task = _taskRepository.GetAll()
                 .Where(p => p.Id == taskItemRequest.TaskId && p.UserId == userid && p.IsDelete == false)
@@ -85,8 +79,8 @@ namespace NoteWebApp.Controllers {
             _taskRepository.Update(task);
 
             taskItemRequest.IsDelete = false;
-            taskItemRequest.Priority = HIGH_PRIORITY;
-            taskItemRequest.Progress = PLAN_PROGRESS;
+            taskItemRequest.Priority = DefaultData.HIGH_PRIORITY;
+            taskItemRequest.Progress = DefaultData.PLAN_PROGRESS;
             taskItemRequest.CreatedAt = DateTime.Now;
             taskItemRequest.StartDate = DateTime.Now;
             taskItemRequest.UpdatedAt = DateTime.Now;
@@ -104,6 +98,9 @@ namespace NoteWebApp.Controllers {
             }
             if (!user.HasClaim(p => p.Type == "UserId")) {
                 return Unauthorized();
+            }
+            if (!taskItemRequest.validate()) {
+                return BadRequest();
             }
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
             var task = _taskRepository.GetAll()
