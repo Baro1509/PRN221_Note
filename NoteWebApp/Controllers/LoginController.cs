@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using NoteWebApp.Request;
@@ -14,10 +15,12 @@ namespace NoteWebApp.Controllers {
     public class LoginController : ControllerBase {
         private readonly UserRepository _userRepository;
         private readonly IConfiguration _config;
+        private readonly IMapper _mapper;
         
-        public LoginController(UserRepository userRepository, IConfiguration config) {
+        public LoginController(UserRepository userRepository, IConfiguration config, IMapper mapper) {
             _userRepository = userRepository;
             _config = config;
+            _mapper = mapper;
         }
 
         [HttpPost]
@@ -25,8 +28,8 @@ namespace NoteWebApp.Controllers {
             if (loginRequest == null || loginRequest.Email.IsNullOrEmpty() || loginRequest.Password.IsNullOrEmpty()) {
                 return BadRequest();
             }
-            var user = _userRepository.GetAll().Where(p => p.Email == loginRequest.Email && p.Password == loginRequest.Password).FirstOrDefault();
-            if (user == null) {
+            var user = _userRepository.GetAll().Where(p => p.Email == loginRequest.Email).FirstOrDefault();
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password)) {
                 return Unauthorized();
             }
             var tokenString = GenerateJSONWebToken(user);
@@ -51,6 +54,15 @@ namespace NoteWebApp.Controllers {
                         expires: DateTime.UtcNow.AddMinutes(10),
                         signingCredentials: signIn);
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        [HttpPost]
+        [Route("/api/users/create")]
+        public IActionResult Create([FromBody] UserRequest request) {
+            request.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            _userRepository.Create(_mapper.Map<User>(request));
+            var user = _userRepository.GetAll().Where(p => p.FirstName == request.FirstName).FirstOrDefault();
+            return Ok(user);
         }
     }
 }

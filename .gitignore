@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Created by https://www.toptal.com/developers/gitignore/api/aspnetcore,visualstudio
 # Edit at https://www.toptal.com/developers/gitignore?templates=aspnetcore,visualstudio
 
@@ -490,3 +491,8 @@ ASALocalRun/
 
 # Visual Studio History (VSHistory) files
 .vshistory/
+=======
+.vs/
+bin/
+obj/
+>>>>>>> 5261e266e53cbe4f198c5eb434b680dca388cabc

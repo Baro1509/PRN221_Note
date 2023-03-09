@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Repository.Models;
+﻿namespace Repository.Models;
 
 public partial class Card
 {
@@ -18,6 +15,8 @@ public partial class Card
     public DateTime UpdatedAt { get; set; }
 
     public Guid NoteId { get; set; }
+
+    public bool? IsDelete { get; set; }
 
     public virtual Note Note { get; set; } = null!;
 }
