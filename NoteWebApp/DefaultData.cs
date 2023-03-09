@@ -1,5 +1,5 @@
 ﻿namespace NoteWebApp {
-    public class DefaultData {
+    public static class DefaultData {
         public static readonly byte LOW_PRIORITY = 2;
         public static readonly byte MEDIUM_PRIORITY = 1;
         public static readonly byte HIGH_PRIORITY = 0;

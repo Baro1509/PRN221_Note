@@ -4,10 +4,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.IdentityModel.Tokens;
 using NoteWebApp.Request;
 using NoteWebApp.Response;
 using Repository;
 using Repository.Models;
+using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 
 namespace NoteWebApp.Controllers {
     [Authorize]
@@ -24,9 +27,43 @@ namespace NoteWebApp.Controllers {
             _taskItemRepository = taskItemRepository;
         }
 
+        //[HttpGet]
+        //[ActionName("GetAllTasks")]
+        //public IActionResult GetAllTasks([FromHeader] TaskDateRequest taskreq) {
+        //    var user = HttpContext.User;
+        //    if (user == null) {
+        //        return Unauthorized();
+        //    }
+
+        //    if (!user.HasClaim(p => p.Type == "UserId")) {
+        //        return Unauthorized();
+        //    }
+
+        //    if (DateTime.Compare(taskreq.DateFrom, taskreq.DateTo) > 0) {
+        //        return BadRequest(new {
+        //            message = "Datefrom should be before dateto"
+        //        });
+        //    }
+        //    var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
+        //    var tasks = _taskRepository.GetAll()
+        //        .Where(p => p.UserId == userid &&
+        //            DateTime.Compare(p.CreatedAt, taskreq.DateTo) <= 0 &&
+        //            DateTime.Compare(taskreq.DateFrom, p.CreatedAt) <= 0 &&
+        //            p.IsDelete == false)
+        //        .Include(p => p.TaskItems.Where(o => o.IsDelete == false))
+        //        .Select(p => _mapper.Map<TaskWithTaskItemResponse>(p));
+        //    if (tasks == null) {
+        //        return Ok(new {
+        //            message = "You do not have any tasks for this date range"
+        //        });
+        //    }
+            
+        //    return Ok(new {taskList = tasks});
+        //}
+        
         [HttpGet]
-        [ActionName("GetAllTasks")]
-        public IActionResult GetAllTasks([FromHeader] TaskDateRequest taskreq) {
+        [ActionName("GetAllTasksWithSort")]
+        public IActionResult GetAllTasks([FromHeader] TaskDateRequest taskreq, string? orderBy, bool? isAscend) {
             var user = HttpContext.User;
             if (user == null) {
                 return Unauthorized();
@@ -48,11 +85,31 @@ namespace NoteWebApp.Controllers {
                     DateTime.Compare(taskreq.DateFrom, p.CreatedAt) <= 0 &&
                     p.IsDelete == false)
                 .Include(p => p.TaskItems.Where(o => o.IsDelete == false))
-                .Select(p => _mapper.Map<TaskWithTaskItemResponse>(p));
+                .Select(p => _mapper.Map<TaskWithTaskItemResponse>(p)).ToList();
             if (tasks == null) {
                 return Ok(new {
                     message = "You do not have any tasks for this date range"
                 });
+            }
+            if (!orderBy.IsNullOrEmpty() && !isAscend == null) {
+                if (orderBy != "progress" && orderBy != "priority") {
+                    return BadRequest(new {
+                        message = "Sort param error"
+                    });
+                }
+                if (isAscend == false) {
+                    if (orderBy == "progress") {
+                        tasks = tasks.OrderByDescending(p => p.Progress).ToList();
+                    } else {
+                        tasks = tasks.OrderByDescending(p => p.Priority).ToList();
+                    }
+                } else {
+                    if (orderBy == "progress") {
+                        tasks = tasks.OrderBy(p => p.Progress).ToList();
+                    } else {
+                        tasks = tasks.OrderBy(p => p.Priority).ToList();
+                    }
+                }
             }
             return Ok(new {taskList = tasks});
         }
