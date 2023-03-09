@@ -60,7 +60,7 @@ namespace NoteWebApp.Controllers
 
         [HttpGet]
         [ActionName("GetAllTasksWithSort")]
-        public IActionResult GetAllTasks([FromHeader] TaskDateRequest taskreq, int orderBy, bool? isAscend)
+        public IActionResult GetAllTasks([FromHeader] TaskDateRequest taskreq, int orderBy, bool? isAsc)
         {
             var user = HttpContext.User;
             if (user == null)
@@ -95,7 +95,7 @@ namespace NoteWebApp.Controllers
                     message = "You do not have any tasks for this date range"
                 });
             }
-            if (!isAscend == null)
+            if (!isAsc == null)
             {
                 if (orderBy != 0 && orderBy != 1)
                 {
@@ -104,7 +104,7 @@ namespace NoteWebApp.Controllers
                         message = "Sort param error"
                     });
                 }
-                if (isAscend == false)
+                if (isAsc == false)
                 {
                     if (orderBy == 1)
                     {

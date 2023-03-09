@@ -25,7 +25,7 @@ namespace NoteWebApp.Controllers
         [HttpGet]
         [ActionName("GetNoteWithCard")]
         [Route("/api/cards/{noteId:guid}")]
-        public IActionResult GetCard([FromQuery] SortCardRequest sortCardRequest, Guid noteId)
+        public IActionResult GetCard([FromQuery] int orderBy, Boolean isAsc, Guid noteId)
         {
             var user = HttpContext.User;
             if (user == null)
@@ -44,28 +44,28 @@ namespace NoteWebApp.Controllers
               .Where(p => p.UserId == userid && p.Id == noteId && p.IsDelete == false)
               .Include(p => p.Cards.Where(o => o.IsDelete == false).OrderByDescending(o => o.UpdatedAt))
               .Select(p => _mapper.Map<NoteCardResponse>(p)).FirstOrDefault();
-            if (sortCardRequest.SortType == 0)
+            if (orderBy == 0)
             {
-                if (sortCardRequest.IsAsc == true)
-                {
-                    note.Cards = note.Cards.OrderBy(o => o.Title).ToList();
-
-                }
-                else
-                {
-                    note.Cards = note.Cards.OrderByDescending(o => o.Title).ToList();
-                }
-            }
-            else if (sortCardRequest.SortType == 1)
-            {
-                if (sortCardRequest.IsAsc == true)
+                if (isAsc == true)
                 {
                     note.Cards = note.Cards.OrderBy(o => o.UpdatedAt).ToList();
-                }
 
+                }
                 else
                 {
                     note.Cards = note.Cards.OrderByDescending(o => o.UpdatedAt).ToList();
+                }
+            }
+            else if (orderBy == 1)
+            {
+                if (isAsc == true)
+                {
+                    note.Cards = note.Cards.OrderBy(o => o.Title).ToList();
+                }
+
+                else
+                {
+                    note.Cards = note.Cards.OrderByDescending(o => o.Title).ToList();
 
                 }
             }
