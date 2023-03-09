@@ -31,7 +31,7 @@ public partial class NoteDbContext : DbContext
     {
         modelBuilder.Entity<Card>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Card__3214EC076152E160");
+            entity.HasKey(e => e.Id).HasName("PK__Card__3214EC07F08339D1");
 
             entity.ToTable("Card");
 
@@ -39,23 +39,25 @@ public partial class NoteDbContext : DbContext
             entity.Property(e => e.Color).HasMaxLength(6);
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
+            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.Note).WithMany(p => p.Cards)
                 .HasForeignKey(d => d.NoteId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Card__NoteId__160F4887");
+                .HasConstraintName("FK__Card__NoteId__49C3F6B7");
         });
 
         modelBuilder.Entity<Note>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Note__3214EC0778BE7042");
+            entity.HasKey(e => e.Id).HasName("PK__Note__3214EC07EE1C829A");
 
             entity.ToTable("Note");
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
@@ -63,12 +65,12 @@ public partial class NoteDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Notes)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Note__UserId__114A936A");
+                .HasConstraintName("FK__Note__UserId__44FF419A");
         });
 
         modelBuilder.Entity<Task>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Task__3214EC07D9DFA0A5");
+            entity.HasKey(e => e.Id).HasName("PK__Task__3214EC07881111D6");
 
             entity.ToTable("Task");
 
@@ -77,18 +79,20 @@ public partial class NoteDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(200);
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.StartDate).HasColumnType("datetime");
+            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
+            entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.User).WithMany(p => p.Tasks)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Task__UserId__07C12930");
+                .HasConstraintName("FK__Task__UserId__3B75D760");
         });
 
         modelBuilder.Entity<TaskItem>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__TaskItem__3214EC075088FE0E");
+            entity.HasKey(e => e.Id).HasName("PK__TaskItem__3214EC07E667C036");
 
             entity.ToTable("TaskItem");
 
@@ -98,18 +102,20 @@ public partial class NoteDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(200);
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.StartDate).HasColumnType("datetime");
+            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
+            entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.Task).WithMany(p => p.TaskItems)
                 .HasForeignKey(d => d.TaskId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__TaskItem__TaskId__0C85DE4D");
+                .HasConstraintName("FK__TaskItem__TaskId__403A8C7D");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User__3214EC078734C876");
+            entity.HasKey(e => e.Id).HasName("PK__User__3214EC07E07F6F2D");
 
             entity.ToTable("User");
 

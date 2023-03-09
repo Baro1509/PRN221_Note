@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NoteWebApp.Request;
 using NoteWebApp.Response;
 using Repository;
+using Repository.Models;
 
 namespace NoteWebApp.Controllers {
     [Authorize]
@@ -32,8 +34,8 @@ namespace NoteWebApp.Controllers {
         //    return new ResponseEntity<List<UserResponse>>(users, 200, "Get all users successfully");
         //}
         
-        [HttpGet(Name = "GetAllUsers")]
-        [ActionName("GetAllUsers")]
+        [HttpGet]
+        //TODO: Hash password
         public IActionResult Get() {
             var users = _userRepository.GetAll().Select(p => _mapper.Map<UserResponse>(p)).ToList();
             return Ok(users);
