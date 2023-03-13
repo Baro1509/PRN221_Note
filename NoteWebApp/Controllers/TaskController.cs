@@ -180,9 +180,17 @@ namespace NoteWebApp.Controllers {
             task.UpdatedAt = now;
             task.StartDate = now;
             task.IsDelete = false;
-            _taskRepository.Create(_mapper.Map<Repository.Models.Task>(task));
+            var taskInsert = _mapper.Map<Repository.Models.Task>(task);
+            _taskRepository.Create(taskInsert);
+            taskInDB = _taskRepository.GetAll().Where(p => p.CreatedAt == now && p.UserId == taskInsert.UserId).FirstOrDefault();
+            if (taskInDB == null) {
+                return NotFound(new {
+                    message = "Something went wrong"
+                });
+            }
             return Ok(new {
-                message = "Task created successfully"
+                message = "Task created successfully",
+                taskid = taskInDB.Id
             });
         }
 
@@ -273,7 +281,8 @@ namespace NoteWebApp.Controllers {
             taskInDB.UpdatedAt = DateTime.Now;
             _taskRepository.Update(taskInDB);
             return Ok(new {
-                message = "Task deleted successfully"
+                message = "Task deleted successfully",
+                taskid = taskInDB.Id
             });
         }
     }
