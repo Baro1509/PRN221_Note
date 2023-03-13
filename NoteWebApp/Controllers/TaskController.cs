@@ -16,6 +16,7 @@ namespace NoteWebApp.Controllers {
     [Authorize]
     [Route("api/tasks")]
     [ApiController]
+    [EnableCors]
     public class TaskController : ControllerBase {
         private readonly TaskRepository _taskRepository;
         private readonly IMapper _mapper;

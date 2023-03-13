@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -11,6 +12,7 @@ using System.Text;
 
 namespace NoteWebApp.Controllers {
     [Route("api/login")]
+    [EnableCors]
     [ApiController]
     public class LoginController : ControllerBase {
         private readonly UserRepository _userRepository;
