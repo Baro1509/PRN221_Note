@@ -123,16 +123,23 @@ namespace NoteWebApp.Controllers
                     message = "Card already exist"
                 });
             }
-
-            cardRequest.CreatedAt = DateTime.Now;
-            cardRequest.UpdatedAt = DateTime.Now;
+            DateTime now = DateTime.Now;
+            cardRequest.CreatedAt = now;
+            cardRequest.UpdatedAt = now;
             cardRequest.IsDelete = false;
-            note.UpdatedAt = DateTime.Now;
+            note.UpdatedAt = now;
             _noteRepository.Update(note);
             _cardRepository.Create(_mapper.Map<Card>(cardRequest));
+            card = _cardRepository.GetAll().Where(p => p.NoteId == note.Id && p.CreatedAt == now).FirstOrDefault();
+            if (card == null) {
+                return NotFound(new {
+                    message = "Something went wrong"
+                });
+            }
             return Ok(new
             {
-                message = "Card created successfully"
+                message = "Card created successfully",
+                cardid = card.Id
             });
         }
         [HttpPut]
@@ -185,7 +192,8 @@ namespace NoteWebApp.Controllers
             _cardRepository.Update(card);
             return Ok(new
             {
-                message = "Card updated successfully"
+                message = "Card updated successfully",
+                cardid = card.Id
             });
         }
         [HttpDelete]

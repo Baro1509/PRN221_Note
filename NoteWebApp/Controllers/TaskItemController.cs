@@ -79,18 +79,27 @@ namespace NoteWebApp.Controllers {
                     message = "Task item already exist"
                 });
             }
-            task.UpdatedAt = DateTime.Now;
+            DateTime now = DateTime.Now;
+            task.UpdatedAt = now;
             _taskRepository.Update(task);
 
             taskItemRequest.IsDelete = false;
             taskItemRequest.Priority = DefaultData.HIGH_PRIORITY;
             taskItemRequest.Progress = DefaultData.PLAN_PROGRESS;
-            taskItemRequest.CreatedAt = DateTime.Now;
-            taskItemRequest.StartDate = DateTime.Now;
-            taskItemRequest.UpdatedAt = DateTime.Now;
-            _taskItemRepository.Create(_mapper.Map<TaskItem>(taskItemRequest));
+            taskItemRequest.CreatedAt = now;
+            taskItemRequest.StartDate = now;
+            taskItemRequest.UpdatedAt = now;
+            var taskItemInsert = _mapper.Map<TaskItem>(taskItemRequest);
+            _taskItemRepository.Create(taskItemInsert);
+            taskItem = _taskItemRepository.GetAll().Where(p => p.TaskId == taskItemInsert.TaskId && p.CreatedAt == now).FirstOrDefault();
+            if (taskItem == null) {
+                return NotFound(new {
+                    message = "Something went wrong"
+                });
+            }
             return Ok(new {
-                message = "Task item created successfully"
+                message = "Task item created successfully",
+                taskitemid = taskItem.Id
             });
         }
 
@@ -136,7 +145,8 @@ namespace NoteWebApp.Controllers {
             taskItem.UpdatedAt = DateTime.Now;
             _taskItemRepository.Update(taskItem);
             return Ok(new {
-                message = "Task item updated successfully"
+                message = "Task item updated successfully",
+                taskitemid = taskItem.Id
             });
         }
 
