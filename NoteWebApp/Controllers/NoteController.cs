@@ -81,13 +81,21 @@ namespace NoteWebApp.Controllers
                     message = "Note already exist"
                 });
             }
-            noteRequest.CreatedAt = DateTime.Now;
-            noteRequest.UpdatedAt = DateTime.Now;
+            DateTime now = DateTime.Now;
+            noteRequest.CreatedAt = now;
+            noteRequest.UpdatedAt = now;
             noteRequest.IsDelete = false;
             _noteRepository.Create(_mapper.Map<Repository.Models.Note>(noteRequest));
+            noteInDB = _noteRepository.GetAll().Where(p => p.UserId == userid && p.CreatedAt == now).FirstOrDefault();
+            if (noteInDB == null) {
+                return NotFound(new {
+                    message = "Something went wrong"
+                });
+            }
             return Ok(new
             {
-                message = "Note created successfully"
+                message = "Note created successfully",
+                noteid = noteInDB.Id
             });
         }
         [HttpPut]
@@ -128,7 +136,8 @@ namespace NoteWebApp.Controllers
             _noteRepository.Update(noteInDB);
             return Ok(new
             {
-                message = "Note updated successfully"
+                message = "Note updated successfully",
+                noteid = noteInDB.Id
             });
         }
         [HttpDelete]
