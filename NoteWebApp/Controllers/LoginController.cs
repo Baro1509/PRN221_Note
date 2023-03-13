@@ -65,12 +65,25 @@ namespace NoteWebApp.Controllers
         }
 
         [HttpPost]
-        [Route("/api/users/create")]
-        public IActionResult Create([FromBody] UserRequest request)
-        {
+        [Route("/api/signup")]
+        public IActionResult Create([FromBody] UserRequest request) {
+            if (!request.validation()) {
+                return BadRequest(new {
+                    message = "Not a valid request"
+                });
+            }
+
+            var user = _userRepository.GetAll().Where(p => p.Email == request.Email).FirstOrDefault();
+            if (user != null) {
+                return BadRequest(new {
+                    message = "This email is already used"
+                });
+            }
             request.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            request.CreatedAt = DateTime.Now;
+            request.UpdatedAt = DateTime.Now;
             _userRepository.Create(_mapper.Map<User>(request));
-            var user = _userRepository.GetAll().Where(p => p.FirstName == request.FirstName).FirstOrDefault();
+            var userCheck = _userRepository.GetAll().Where(p => p.Email == request.Email).FirstOrDefault();
             return Ok(user);
         }
     }
