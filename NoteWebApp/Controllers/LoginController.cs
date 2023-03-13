@@ -59,23 +59,28 @@ namespace NoteWebApp.Controllers
                         _config["Jwt:Issuer"],
                         _config["Jwt:Audience"],
                         claims,
-                        expires: DateTime.UtcNow.AddMinutes(10),
+                        expires: DateTime.UtcNow.AddMinutes(30),
                         signingCredentials: signIn);
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         [HttpPost]
         [Route("/api/signup")]
-        public IActionResult Create([FromBody] UserRequest request) {
-            if (!request.validation()) {
-                return BadRequest(new {
+        public IActionResult Create([FromBody] UserRequest request)
+        {
+            if (!request.validation())
+            {
+                return BadRequest(new
+                {
                     message = "Not a valid request"
                 });
             }
 
             var user = _userRepository.GetAll().Where(p => p.Email == request.Email).FirstOrDefault();
-            if (user != null) {
-                return BadRequest(new {
+            if (user != null)
+            {
+                return BadRequest(new
+                {
                     message = "This email is already used"
                 });
             }

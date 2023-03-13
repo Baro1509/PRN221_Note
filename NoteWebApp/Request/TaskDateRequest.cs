@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace NoteWebApp.Request {
-    public class TaskDateRequest {
-        [FromHeader]
-        public DateTime DateFrom { get; set; }
-        [FromHeader]
-        public DateTime DateTo { get; set; }
+namespace NoteWebApp.Request
+{
+    public class TaskDateRequest
+    {
+        [FromQuery]
+        public long dateFrom { get; set; }
+        [FromQuery]
+        public long dateTo { get; set; }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NoteWebApp.Request;
@@ -14,7 +13,8 @@ namespace NoteWebApp.Controllers
     [Route("api/tasks")]
     [ApiController]
     [EnableCors]
-    public class TaskController : ControllerBase {
+    public class TaskController : ControllerBase
+    {
         private readonly TaskRepository _taskRepository;
         private readonly IMapper _mapper;
         private readonly TaskItemRepository _taskItemRepository;
@@ -38,7 +38,7 @@ namespace NoteWebApp.Controllers
         //        return Unauthorized();
         //    }
 
-        //    if (DateTime.Compare(taskreq.DateFrom, taskreq.DateTo) > 0) {
+        //    if (DateTime.Compare(taskreq.dateFrom, taskreq.dateTo) > 0) {
         //        return BadRequest(new {
         //            message = "Datefrom should be before dateto"
         //        });
@@ -46,8 +46,8 @@ namespace NoteWebApp.Controllers
         //    var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
         //    var tasks = _taskRepository.GetAll()
         //        .Where(p => p.UserId == userid &&
-        //            DateTime.Compare(p.CreatedAt, taskreq.DateTo) <= 0 &&
-        //            DateTime.Compare(taskreq.DateFrom, p.CreatedAt) <= 0 &&
+        //            DateTime.Compare(p.CreatedAt, taskreq.dateTo) <= 0 &&
+        //            DateTime.Compare(taskreq.dateFrom, p.CreatedAt) <= 0 &&
         //            p.IsDelete == false)
         //        .Include(p => p.TaskItems.Where(o => o.IsDelete == false))
         //        .Select(p => _mapper.Map<TaskWithTaskItemResponse>(p));
@@ -62,7 +62,7 @@ namespace NoteWebApp.Controllers
 
         [HttpGet]
         [ActionName("GetAllTasksWithSort")]
-        public IActionResult GetAllTasks([FromHeader] TaskDateRequest taskreq, int orderBy, bool? isAsc)
+        public IActionResult GetAllTasks([FromQuery] TaskDateRequest taskreq, int orderBy, bool? isAsc)
         {
             var user = HttpContext.User;
             if (user == null)
@@ -75,22 +75,25 @@ namespace NoteWebApp.Controllers
                 return Unauthorized();
             }
 
-            if (DateTime.Compare(taskreq.DateFrom, taskreq.DateTo) > 0)
+            if (taskreq.dateFrom > taskreq.dateTo)
             {
                 return BadRequest(new
                 {
                     message = "Datefrom should be before dateto"
                 });
             }
+            var dateFrom = DateTimeOffset.FromUnixTimeMilliseconds(taskreq.dateFrom).DateTime;
+            var dateTo = DateTimeOffset.FromUnixTimeMilliseconds(taskreq.dateTo).DateTime;
+
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
             var tasks = _taskRepository.GetAll()
                 .Where(p => p.UserId == userid &&
-                    DateTime.Compare(p.CreatedAt, taskreq.DateTo) <= 0 &&
-                    DateTime.Compare(taskreq.DateFrom, p.CreatedAt) <= 0 &&
+                    DateTime.Compare(p.CreatedAt, dateTo) <= 0 &&
+                    DateTime.Compare(dateFrom, p.CreatedAt) <= 0 &&
                     p.IsDelete == false)
                 .Include(p => p.TaskItems.Where(o => o.IsDelete == false))
                 .Select(p => _mapper.Map<TaskWithTaskItemResponse>(p)).ToList();
-            if (tasks == null)
+            if (tasks == null || tasks.Count == 0)
             {
                 return Ok(new
                 {
