@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NoteWebApp.Request;
@@ -11,8 +13,8 @@ namespace NoteWebApp.Controllers
     [Authorize]
     [Route("api/tasks")]
     [ApiController]
-    public class TaskController : ControllerBase
-    {
+    [EnableCors]
+    public class TaskController : ControllerBase {
         private readonly TaskRepository _taskRepository;
         private readonly IMapper _mapper;
         private readonly TaskItemRepository _taskItemRepository;

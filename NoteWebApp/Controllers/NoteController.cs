@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NoteWebApp.Request;
@@ -7,8 +9,10 @@ using Repository;
 namespace NoteWebApp.Controllers
 
 {
+    [Authorize]
     [Route("api/notes")]
     [ApiController]
+    [EnableCors]
     public class NoteController : Controller
     {
         private readonly NoteRepository _noteRepository;

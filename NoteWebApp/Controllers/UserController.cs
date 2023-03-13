@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ namespace NoteWebApp.Controllers {
     [Authorize]
     [Route("api/users")]
     [ApiController]
+    [EnableCors]
     public class UserController : ControllerBase {
         private readonly UserRepository _userRepository;
         private readonly IMapper _mapper;

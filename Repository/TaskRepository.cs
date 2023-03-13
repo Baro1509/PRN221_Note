@@ -1,6 +1,6 @@
 namespace Repository
 {
-    public class TaskRepository : RepositoryBase<Models.Task>
+    public class TaskRepository : RepositoryBase<Repository.Models.Task>
     {
     }
 }
