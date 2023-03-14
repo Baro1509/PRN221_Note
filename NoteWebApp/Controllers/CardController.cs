@@ -28,8 +28,8 @@ namespace NoteWebApp.Controllers
         }
         [HttpGet]
         [ActionName("GetNoteWithCard")]
-        [Route("/api/cards/{noteId:guid}")]
-        public IActionResult GetCard([FromQuery] int orderBy, Boolean isAsc, Guid noteId)
+        [Route("/api/cards")]
+        public IActionResult GetCardsByNote([FromQuery] int orderBy, Boolean isAsc, Guid noteId)
         {
             var user = HttpContext.User;
             if (user == null)
@@ -84,6 +84,50 @@ namespace NoteWebApp.Controllers
 
             return Ok(new { note = note });
         }
+        [HttpGet]
+        [ActionName("GetCard")]
+        [Route("/api/cards/{cardId:guid}")]
+        public IActionResult GetCard(Guid cardId)
+        {
+            var user = HttpContext.User;
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
+                return Unauthorized();
+            }
+            var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
+
+            var card = _cardRepository
+                .GetAll()
+                .Where(p => p.Id == cardId && p.IsDelete == false)
+                .Select(p => _mapper.Map<CardResponse>(p)).FirstOrDefault();
+
+            if (card == null)
+            {
+                return Ok(new
+                {
+                    message = "Card not found"
+                });
+            }
+
+            var note = _noteRepository
+                .GetAll()
+                .Where(p => p.Id == card.NoteId && p.UserId == userid)
+                .FirstOrDefault();
+            if (note == null)
+            {
+                return Unauthorized(new
+                {
+                    message = "You are not allowed to read this card"
+                });
+            }
+
+            return Ok(new { card });
+        }
         [HttpPost]
         public IActionResult Create([FromBody] CardRequest cardRequest)
         {
@@ -131,8 +175,10 @@ namespace NoteWebApp.Controllers
             _noteRepository.Update(note);
             _cardRepository.Create(_mapper.Map<Card>(cardRequest));
             card = _cardRepository.GetAll().Where(p => p.NoteId == note.Id && p.CreatedAt == now).FirstOrDefault();
-            if (card == null) {
-                return NotFound(new {
+            if (card == null)
+            {
+                return NotFound(new
+                {
                     message = "Something went wrong"
                 });
             }

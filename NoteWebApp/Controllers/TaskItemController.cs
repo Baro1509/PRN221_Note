@@ -1,72 +1,95 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NoteWebApp.Request;
 using NoteWebApp.Response;
 using Repository;
 using Repository.Models;
 
-namespace NoteWebApp.Controllers {
+namespace NoteWebApp.Controllers
+{
     [Authorize]
     [Route("api/tasks/taskitems")]
     [ApiController]
     [EnableCors]
-    public class TaskItemController : ControllerBase {
+    public class TaskItemController : ControllerBase
+    {
         private readonly TaskItemRepository _taskItemRepository;
         private readonly TaskRepository _taskRepository;
         private readonly IMapper _mapper;
 
-        public TaskItemController(TaskItemRepository taskItemRepository, IMapper mapper, TaskRepository taskRepository) {
+        public TaskItemController(TaskItemRepository taskItemRepository, IMapper mapper, TaskRepository taskRepository)
+        {
             _taskItemRepository = taskItemRepository;
             _mapper = mapper;
             _taskRepository = taskRepository;
         }
 
         [HttpGet]
-        public IActionResult GetAllTaskItems([FromHeader] Guid taskid) {
+        public IActionResult GetAllTaskItems([FromHeader] Guid taskid)
+        {
             var user = HttpContext.User;
-            if (user == null) {
+            if (user == null)
+            {
                 return Unauthorized();
             }
 
-            if (!user.HasClaim(p => p.Type == "UserId")) {
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
                 return Unauthorized();
             }
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
             var task = _taskRepository.GetAll()
                 .Where(p => p.Id == taskid && p.UserId == userid && p.IsDelete == false)
                 .FirstOrDefault();
-            if (task == null) {
-                return NotFound(new {
+            if (task == null)
+            {
+                return NotFound(new
+                {
                     message = "Task not found"
                 });
             }
             var taskItems = _taskItemRepository.GetAll().Where(p => p.TaskId == taskid && p.IsDelete == false).Select(p => _mapper.Map<TaskItemResponse>(p));
-            return Ok(new {
+            return Ok(new
+            {
                 taskItems = taskItems
             });
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] TaskItemRequest taskItemRequest) {
+        public IActionResult Create([FromBody] TaskItemRequest taskItemRequest)
+        {
             var user = HttpContext.User;
-            if (user == null) {
-                return Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(new
+                {
+                    message = "You are not allowed to create subtask of this task."
+                });
             }
-            if (!user.HasClaim(p => p.Type == "UserId")) {
-                return Unauthorized();
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
+                return Unauthorized(new
+                {
+                    message = "You are not allowed to create subtask of this task."
+                });
             }
-            if (!taskItemRequest.validate()) {
-                return BadRequest();
+            if (!taskItemRequest.validate())
+            {
+                return BadRequest(new
+                {
+                    message = "The request body is invalid."
+                });
             }
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
             var task = _taskRepository.GetAll()
                 .Where(p => p.Id == taskItemRequest.TaskId && p.UserId == userid && p.IsDelete == false)
                 .FirstOrDefault();
-            if (task == null) {
-                return NotFound(new {
+            if (task == null)
+            {
+                return NotFound(new
+                {
                     message = "Task not found"
                 });
             }
@@ -74,8 +97,10 @@ namespace NoteWebApp.Controllers {
             var taskItem = _taskItemRepository.GetAll()
                 .Where(p => p.Id == taskItemRequest.Id && p.TaskId == taskItemRequest.TaskId && p.IsDelete == false)
                 .FirstOrDefault();
-            if (taskItem != null) {
-                return BadRequest(new {
+            if (taskItem != null)
+            {
+                return BadRequest(new
+                {
                     message = "Task item already exist"
                 });
             }
@@ -92,35 +117,44 @@ namespace NoteWebApp.Controllers {
             var taskItemInsert = _mapper.Map<TaskItem>(taskItemRequest);
             _taskItemRepository.Create(taskItemInsert);
             taskItem = _taskItemRepository.GetAll().Where(p => p.TaskId == taskItemInsert.TaskId && p.CreatedAt == now).FirstOrDefault();
-            if (taskItem == null) {
-                return NotFound(new {
+            if (taskItem == null)
+            {
+                return NotFound(new
+                {
                     message = "Something went wrong"
                 });
             }
-            return Ok(new {
+            return Ok(new
+            {
                 message = "Task item created successfully",
                 taskitemid = taskItem.Id
             });
         }
 
         [HttpPut]
-        public IActionResult Update([FromBody] TaskItemRequest taskItemRequest) {
+        public IActionResult Update([FromBody] TaskItemRequest taskItemRequest)
+        {
             var user = HttpContext.User;
-            if (user == null) {
+            if (user == null)
+            {
                 return Unauthorized();
             }
-            if (!user.HasClaim(p => p.Type == "UserId")) {
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
                 return Unauthorized();
             }
-            if (!taskItemRequest.validate()) {
+            if (!taskItemRequest.validate())
+            {
                 return BadRequest();
             }
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
             var task = _taskRepository.GetAll()
                 .Where(p => p.Id == taskItemRequest.TaskId && p.UserId == userid && p.IsDelete == false)
                 .FirstOrDefault();
-            if (task == null) {
-                return NotFound(new {
+            if (task == null)
+            {
+                return NotFound(new
+                {
                     message = "Task not found"
                 });
             }
@@ -128,8 +162,10 @@ namespace NoteWebApp.Controllers {
             var taskItem = _taskItemRepository.GetAll()
                 .Where(p => p.Id == taskItemRequest.Id && p.TaskId == taskItemRequest.TaskId && p.IsDelete == false)
                 .FirstOrDefault();
-            if (taskItem == null) {
-                return NotFound(new {
+            if (taskItem == null)
+            {
+                return NotFound(new
+                {
                     message = "Task item not found"
                 });
             }
@@ -144,39 +180,49 @@ namespace NoteWebApp.Controllers {
             taskItem.StartDate = taskItemRequest.StartDate;
             taskItem.UpdatedAt = DateTime.Now;
             _taskItemRepository.Update(taskItem);
-            return Ok(new {
+            return Ok(new
+            {
                 message = "Task item updated successfully",
                 taskitemid = taskItem.Id
             });
         }
 
         [HttpDelete]
-        public IActionResult Delete([FromQuery] Guid id) {
+        public IActionResult Delete([FromQuery] Guid id)
+        {
             var user = HttpContext.User;
-            if (user == null) {
+            if (user == null)
+            {
                 return Unauthorized();
             }
-            if (!user.HasClaim(p => p.Type == "UserId")) {
+            if (!user.HasClaim(p => p.Type == "UserId"))
+            {
                 return Unauthorized();
             }
             var userid = Guid.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
 
             var taskItem = _taskItemRepository.GetAll().Where(p => p.Id == id && p.IsDelete == false).FirstOrDefault();
-            if (taskItem == null) {
-                return NotFound(new {
+            if (taskItem == null)
+            {
+                return NotFound(new
+                {
                     message = "Task item not found"
                 });
             }
 
             var task = _taskRepository.GetAll().Where(p => p.Id == taskItem.TaskId && p.IsDelete == false).FirstOrDefault();
-            if (task == null) {
-                return NotFound(new {
+            if (task == null)
+            {
+                return NotFound(new
+                {
                     message = "Task not found, denying delete"
                 });
             }
 
-            if (task.UserId != userid) {
-                return Unauthorized(new {
+            if (task.UserId != userid)
+            {
+                return Unauthorized(new
+                {
                     message = "You are not allowed to delete this task item"
                 });
             }
@@ -185,7 +231,8 @@ namespace NoteWebApp.Controllers {
 
             taskItem.IsDelete = true;
             _taskItemRepository.Update(taskItem);
-            return Ok(new {
+            return Ok(new
+            {
                 message = "Task item deleted successfully"
             });
         }

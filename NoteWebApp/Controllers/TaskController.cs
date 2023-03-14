@@ -216,12 +216,15 @@ namespace NoteWebApp.Controllers
             var taskInsert = _mapper.Map<Repository.Models.Task>(task);
             _taskRepository.Create(taskInsert);
             taskInDB = _taskRepository.GetAll().Where(p => p.CreatedAt == now && p.UserId == taskInsert.UserId).FirstOrDefault();
-            if (taskInDB == null) {
-                return NotFound(new {
+            if (taskInDB == null)
+            {
+                return NotFound(new
+                {
                     message = "Something went wrong"
                 });
             }
-            return Ok(new {
+            return Ok(new
+            {
                 message = "Task created successfully",
                 taskid = taskInDB.Id
             });
@@ -267,13 +270,6 @@ namespace NoteWebApp.Controllers
                 return NotFound(new
                 {
                     message = "The task you are trying to update is not available"
-                });
-            }
-            if (DateTime.Compare(taskInDB.CreatedAt, task.StartDate) > 0)
-            {
-                return BadRequest(new
-                {
-                    message = "Start date should be after created date"
                 });
             }
 
@@ -333,7 +329,8 @@ namespace NoteWebApp.Controllers
             taskInDB.IsDelete = true;
             taskInDB.UpdatedAt = DateTime.Now;
             _taskRepository.Update(taskInDB);
-            return Ok(new {
+            return Ok(new
+            {
                 message = "Task deleted successfully",
                 taskid = taskInDB.Id
             });

@@ -1,5 +1,7 @@
-﻿namespace NoteWebApp.Request {
-    public class TaskItemRequest {
+﻿namespace NoteWebApp.Request
+{
+    public class TaskItemRequest
+    {
         public Guid Id { get; set; }
 
         public string Title { get; set; } = null!;
@@ -22,7 +24,8 @@
 
         public bool? IsDelete { get; set; }
 
-        public bool validate() {
+        public bool validate()
+        {
             if (Progress != DefaultData.PROGRESS_PROGRESS &&
                 Progress != DefaultData.DONE_PROGRESS &&
                 Progress != DefaultData.PLAN_PROGRESS &&
@@ -30,7 +33,6 @@
             if (Priority != DefaultData.LOW_PRIORITY &&
                 Priority != DefaultData.HIGH_PRIORITY &&
                 Priority != DefaultData.MEDIUM_PRIORITY) return false;
-            if (DateTime.Compare(StartDate, CreatedAt) < 0) return false;
             return true;
         }
     }
