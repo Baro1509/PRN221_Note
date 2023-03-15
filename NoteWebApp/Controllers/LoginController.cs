@@ -39,11 +39,11 @@ namespace NoteWebApp.Controllers
             {
                 return Unauthorized();
             }
-            var tokenString = GenerateJSONWebToken(user);
-            return Ok(new { token = tokenString, userId = user.Id });
+            var tokenObject = GenerateJSONWebToken(user);
+            return Ok(new { token = tokenObject, userId = user.Id });
         }
 
-        private string GenerateJSONWebToken(User user)
+        private Object GenerateJSONWebToken(User user)
         {
             var claims = new[] {
                 new Claim(JwtRegisteredClaimNames.Sub, _config["Jwt:Subject"]),
@@ -55,13 +55,14 @@ namespace NoteWebApp.Controllers
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expireTime = DateTime.UtcNow.AddMinutes(30);
             var token = new JwtSecurityToken(
                         _config["Jwt:Issuer"],
                         _config["Jwt:Audience"],
                         claims,
-                        expires: DateTime.UtcNow.AddMinutes(30),
+                        expires: expireTime,
                         signingCredentials: signIn);
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return new { token = new JwtSecurityTokenHandler().WriteToken(token), expires = expireTime };
         }
 
         [HttpPost]

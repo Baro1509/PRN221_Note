@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace Repository.Models;
 
@@ -25,23 +24,14 @@ public partial class NoteDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(GetConnectionString());
-
-    public string GetConnectionString() {
-        string connectionString;
-        IConfiguration config = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", true, true)
-            .Build();
-        connectionString = config["ConnectionStrings:NoteDB"];
-        return connectionString;
-    }
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=(local);Uid=sa;Pwd=123;Database=NoteDB;TrustServerCertificate=true");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Card>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Card__3214EC07F08339D1");
+            entity.HasKey(e => e.Id).HasName("PK__Card__3214EC0732CF42A8");
 
             entity.ToTable("Card");
 
@@ -49,25 +39,23 @@ public partial class NoteDbContext : DbContext
             entity.Property(e => e.Color).HasMaxLength(6);
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
-            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.Note).WithMany(p => p.Cards)
                 .HasForeignKey(d => d.NoteId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Card__NoteId__49C3F6B7");
+                .HasConstraintName("FK__Card__NoteId__71D1E811");
         });
 
         modelBuilder.Entity<Note>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Note__3214EC07EE1C829A");
+            entity.HasKey(e => e.Id).HasName("PK__Note__3214EC07746314BA");
 
             entity.ToTable("Note");
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
-            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
@@ -75,12 +63,12 @@ public partial class NoteDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Notes)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Note__UserId__44FF419A");
+                .HasConstraintName("FK__Note__UserId__5812160E");
         });
 
         modelBuilder.Entity<Task>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Task__3214EC07881111D6");
+            entity.HasKey(e => e.Id).HasName("PK__Task__3214EC079192DEA4");
 
             entity.ToTable("Task");
 
@@ -89,20 +77,18 @@ public partial class NoteDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(200);
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.StartDate).HasColumnType("datetime");
-            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
-            entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.User).WithMany(p => p.Tasks)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Task__UserId__3B75D760");
+                .HasConstraintName("FK__Task__UserId__4E88ABD4");
         });
 
         modelBuilder.Entity<TaskItem>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__TaskItem__3214EC07E667C036");
+            entity.HasKey(e => e.Id).HasName("PK__TaskItem__3214EC075D93E75E");
 
             entity.ToTable("TaskItem");
 
@@ -112,20 +98,18 @@ public partial class NoteDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(200);
             entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
             entity.Property(e => e.StartDate).HasColumnType("datetime");
-            entity.Property(e => e.IsDelete).HasDefaultValueSql("((0))");
-            entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(50);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.Task).WithMany(p => p.TaskItems)
                 .HasForeignKey(d => d.TaskId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__TaskItem__TaskId__403A8C7D");
+                .HasConstraintName("FK__TaskItem__TaskId__534D60F1");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User__3214EC07E07F6F2D");
+            entity.HasKey(e => e.Id).HasName("PK__User__3214EC0728B7FA46");
 
             entity.ToTable("User");
 

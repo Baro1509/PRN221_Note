@@ -100,7 +100,7 @@ namespace NoteWebApp.Controllers
                     message = "You do not have any tasks for this date range"
                 });
             }
-            if (!isAsc == null)
+            if (isAsc.HasValue)
             {
                 if (orderBy != 0 && orderBy != 1)
                 {
@@ -117,7 +117,7 @@ namespace NoteWebApp.Controllers
                     }
                     else
                     {
-                        tasks = tasks.OrderByDescending(p => p.Priority).ToList();
+                        tasks = tasks.OrderBy(p => p.Priority).ToList();
                     }
                 }
                 else
@@ -128,7 +128,7 @@ namespace NoteWebApp.Controllers
                     }
                     else
                     {
-                        tasks = tasks.OrderBy(p => p.Priority).ToList();
+                        tasks = tasks.OrderByDescending(p => p.Priority).ToList();
                     }
                 }
             }

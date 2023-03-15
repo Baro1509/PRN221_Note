@@ -48,7 +48,7 @@ namespace NoteWebApp.Controllers
               .Where(p => p.UserId == userid && p.Id == noteId && p.IsDelete == false)
               .Include(p => p.Cards.Where(o => o.IsDelete == false).OrderByDescending(o => o.UpdatedAt))
               .Select(p => _mapper.Map<NoteCardResponse>(p)).FirstOrDefault();
-            if (orderBy == 0)
+            if (orderBy == 1)
             {
                 if (isAsc == true)
                 {
@@ -60,7 +60,7 @@ namespace NoteWebApp.Controllers
                     note.Cards = note.Cards.OrderByDescending(o => o.UpdatedAt).ToList();
                 }
             }
-            else if (orderBy == 1)
+            else if (orderBy == 0)
             {
                 if (isAsc == true)
                 {
@@ -124,6 +124,10 @@ namespace NoteWebApp.Controllers
                 {
                     message = "You are not allowed to read this card"
                 });
+            }
+            else
+            {
+                card.NoteTitle = note.Title;
             }
 
             return Ok(new { card });
@@ -231,6 +235,7 @@ namespace NoteWebApp.Controllers
             card.Title = cardRequest.Title;
             card.Color = cardRequest.Color;
             card.Content = cardRequest.Content;
+            card.RawContent = cardRequest.RawContent;
             card.IsDelete = false;
             card.UpdatedAt = DateTime.Now;
             note.UpdatedAt = DateTime.Now;
